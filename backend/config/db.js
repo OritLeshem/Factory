@@ -12,10 +12,7 @@ async function getCollection(collectionName) {
   try {
       const db = await connect()
       const collection = await db.collection(collectionName) // using the parameter
-      // console.log('Using collection:', collectionName) // logging the name of the collection
       console.log('Successfully connected to collection:', collection.s.namespace.collection);
-      // const documents = await collection.find().limit(1).toArray(); // attempt to find documents in the collection
-      // console.log('Found documents:', documents);
       return collection
   } catch (err) {
       console.error('Failed to get Mongo collection', err) // changed logger.error to console.error as logger is not defined in your snippet
