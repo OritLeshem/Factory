@@ -49,10 +49,9 @@ async function add(department){
 async function update(department){
   try{
     const departmentToSave={
-      firstName: department.firstName,
-      lastName: department.lastName,
-      startWorkYear: department.startWorkYear,
-      departmentId: department.departmentId
+      name: department.name,
+      manager: department.manager,
+      
       
   }
   const collection =await configDb.getCollection(collectionName)
