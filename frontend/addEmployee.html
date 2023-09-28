@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Add Employee</title>
+</head>
+
+<body>
+  <form id="addEmployeeForm">
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" name="firstName" required><br>
+
+    <label for="lastName">Last Name:</label>
+    <input type="text" id="lastName" name="lastName" required><br>
+
+    <label for="startWorkYear">Start Work Year:</label>
+    <input type="date" id="startWorkYear" name="startWorkYear" required><br>
+
+    <label for="departmentId">Department ID:</label>
+    <input type="text" id="departmentId" name="departmentId" required><br>
+
+    <button type="button" onclick="addEmployee()">Add Employee</button>
+    <button type="button" onclick="location.href='employee.html'">Cansel</button>
+  </form>
+  <script>
+    async function addEmployee() {
+      try {
+        const formData = new FormData(document.getElementById('addEmployeeForm'));
+        const employee = Object.fromEntries(formData.entries());
+        const res = await fetch('http://localhost:5001/employee', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(employee)
+        });
+        if (res.ok) {
+          alert('Employee added successfully!');
+          location.href = 'employee.html'; // redirect to the employee list page.
+        } else {
+          alert('Failed to add employee!');
+        }
+      } catch (err) {
+        console.error('Error adding employee', err);
+        alert('Failed to add employee!');
+      }
+    }
+  </script>
+</body>
+
+</html>

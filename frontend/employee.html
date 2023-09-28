@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Employees</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+  </style>
+</head>
+
+<body>
+  <button onclick="location.href='addEmployee.html'">New Employee</button>
+  <select id="departmentFilter" onchange="filterByDepartment()">
+    <option value="">All Departments</option>
+    <!-- Other options will be added dynamically -->
+  </select>
+  <table>
+    <thead>
+      <tr>
+        <th>Full Name</th>
+        <th>Department</th>
+        <th>Shifts</th>
+      </tr>
+    </thead>
+    <tbody id="employeeTableBody">
+      <!-- Table rows will be added dynamically -->
+    </tbody>
+  </table>
+  <script>
+    const baseUrl = 'http://localhost:5001';
+
+    async function fetchDepartments() {
+      try {
+        const res = await fetch(`${baseUrl}/department`);
+        const departments = await res.json();
+        console.log('departments', departments)
+        const selectElement = document.getElementById('departmentFilter');
+        departments.forEach(dept => {
+          const optionElement = document.createElement('option');
+          optionElement.value = dept._id;
+          optionElement.textContent = dept.departmentName;
+          selectElement.appendChild(optionElement);
+        });
+      } catch (err) {
+        console.error("Error fetching departments", err);
+      }
+    }
+
+    async function fetchEmployees() {
+      try {
+        const res = await fetch(`${baseUrl}/employee`);
+        const employees = await res.json();
+        const tableBody = document.getElementById('employeeTableBody');
+        employees.forEach(emp => {
+          const row = document.createElement('tr');
+          const nameCell = document.createElement('td');
+          const deptCell = document.createElement('td');
+          const shiftCell = document.createElement('td');
+
+          nameCell.innerHTML = `<a href="${baseUrl}/edit-employee/${emp._id}">${emp.firstName} ${emp.lastName}</a>`;
+          deptCell.innerHTML = `<a href="${baseUrl}/edit-department/${emp.departmentId}">${emp.department.departmentName}</a>`;
+          shiftCell.textContent = 'Shift data here'; // Placeholder text for shifts
+
+          row.appendChild(nameCell);
+          row.appendChild(deptCell);
+          row.appendChild(shiftCell);
+          tableBody.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Error fetching employees", err);
+      }
+    }
+
+    function filterByDepartment() {
+      const selectedDeptId = document.getElementById('departmentFilter').value;
+      const rows = document.getElementById('employeeTableBody').children;
+      Array.from(rows).forEach(row => {
+        const deptCell = row.children[1].firstChild; // <a> inside the department cell
+        const deptId = deptCell.href.split('/').pop(); // Extract department ID from the URL
+        row.style.display = (!selectedDeptId || selectedDeptId === deptId) ? '' : 'none';
+      });
+    }
+
+    fetchDepartments();
+    fetchEmployees();
+  </script>
+</body>
+
+</html>
