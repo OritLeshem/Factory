@@ -3,15 +3,51 @@ const ObjectId = require('mongodb').ObjectId
 
 const collectionName = 'employee'
 
+// async function query() {
+//   try {
+//     const collection = await configDb.getCollection(collectionName)
+//     const employees = await collection.find().toArray()
+//     return employees
+//   } catch (err) {
+//     console.log(err)
+//   }
+// }
+
 async function query() {
   try {
-    const collection = await configDb.getCollection(collectionName)
-    const employees = await collection.find().toArray()
-    return employees
+    const collection = await configDb.getCollection(collectionName);
+    const aggregationPipeline = [
+      {
+        $lookup: {
+          from: 'department',
+          let: { departmentId: { $toObjectId: { $ifNull: ["$departmentId", null] } } },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$_id", "$$departmentId"] }
+              }
+            }
+          ],
+          as: 'department'
+        }
+      },
+      {
+        $unwind: {
+          path: '$department',
+          preserveNullAndEmptyArrays: true
+        }
+      }
+    ];
+    const employeesWithDepartments = await collection.aggregate(aggregationPipeline).toArray();
+    return employeesWithDepartments;
   } catch (err) {
-    console.log(err)
+    console.log(err);
+    throw err; // it is generally better to throw the error so that the caller can handle it appropriately
   }
 }
+
+
+
 async function getById(employeeId) {
   try {
       const collection = await configDb.getCollection(collectionName)

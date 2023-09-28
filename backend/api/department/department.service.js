@@ -49,8 +49,8 @@ async function add(department){
 async function update(department){
   try{
     const departmentToSave={
-      name: department.name,
-      manager: department.manager,
+      departmentManager: department.departmentManager,
+      departmentName: department.departmentName,
       
       
   }
@@ -74,12 +74,12 @@ module.exports = {
 // [
 //   {
 //       "_id": "6513827bb38f9013ca48e084",
-//       "manager": "Yael",
-//       "name": "Avi"
+//       "departmentManager": "Yael",
+//       "departmentName": "Avi"
 //   },
 //   {
 //       "_id": "65138ff3b38f9013ca48e085",
-//       "manager": "Sam",
-//       "name": "Dana"
+//       "departmentManager": "Sam",
+//       "departmentName": "Dana"
 //   }
 // ]
