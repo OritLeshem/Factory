@@ -3,16 +3,6 @@ const ObjectId = require('mongodb').ObjectId
 
 const collectionName = 'employee'
 
-// async function query() {
-//   try {
-//     const collection = await configDb.getCollection(collectionName)
-//     const employees = await collection.find().toArray()
-//     return employees
-//   } catch (err) {
-//     console.log(err)
-//   }
-// }
-
 async function query() {
   try {
     const collection = await configDb.getCollection(collectionName);
@@ -36,13 +26,37 @@ async function query() {
           path: '$department',
           preserveNullAndEmptyArrays: true
         }
+      },
+      {
+        $lookup: {
+          from: 'shift',
+          let: { shiftIds: { $map: { input: "$shifts", as: "id", in: { $toObjectId: { $ifNull: ["$$id", null] } } } } }, // Mapping shifts array to ObjectId array
+          pipeline: [
+            {
+              $match: {
+                $expr: { $in: ["$_id", "$$shiftIds"] }
+              }
+            }
+          ],
+          as: 'shifts'
+        }
       }
     ];
-    const employeesWithDepartments = await collection.aggregate(aggregationPipeline).toArray();
-    return employeesWithDepartments;
+    
+    // Debug: Log the aggregation pipeline
+    // console.log("Aggregation Pipeline:");
+    // console.log(JSON.stringify(aggregationPipeline, null, 2));
+    
+    const employeesWithDepartmentsAndShifts = await collection.aggregate(aggregationPipeline).toArray();
+    
+    // Debug: Log the result of the aggregation
+    // console.log("Aggregation Result:");
+    // console.log(JSON.stringify(employeesWithDepartmentsAndShifts, null, 2));
+    
+    return employeesWithDepartmentsAndShifts;
   } catch (err) {
-    console.log(err);
-    throw err; // it is generally better to throw the error so that the caller can handle it appropriately
+    console.log("Error during aggregation:", err);
+    throw err; 
   }
 }
 
@@ -88,7 +102,8 @@ async function update(employee){
       firstName: employee.firstName,
       lastName: employee.lastName,
       startWorkYear: employee.startWorkYear,
-      departmentId: employee.departmentId
+      departmentId: employee.departmentId,
+      shifts: employee.shifts
       
   }
   const collection =await configDb.getCollection(collectionName)
@@ -109,33 +124,45 @@ module.exports = {
   update
 }
 
-// [
-  // {
-  //     "_id": "6514b21bbc38a86b96720f31",
-  //     "firstName": "John",
-  //     "lastName": "Dell",
-  //     "startWorkYear": "2009-01-01T00:00:00.000Z",
-  //     "departmentId": "1"
-  // },
-  // {
-  //     "_id": "6514c7afbc38a86b96720f32",
-  //     "firstName": "Haim",
-  //     "lastName": "Cohen",
-  //     "startWorkYear": "2009-01-01T00:00:00.000Z",
-  //     "departmentId": "1"
-  // },
-//   {
-//       "_id": "6514cf49bc38a86b96720f34",
-//       "firstName": "Yael",
-//       "lastName": "Jack",
-//       "startWorkYear": "2009-01-01T00:00:00.000Z",
-//       "departmentId": "1"
-//   },
-//   {
-//       "_id": "6514cf61bc38a86b96720f35",
-//       "firstName": "Ruv",
-//       "lastName": "Le",
-//       "startWorkYear": "2009-01-01T00:00:00.000Z",
-//       "departmentId": "1"
+// async function query() {
+//   try {
+//     const collection = await configDb.getCollection(collectionName)
+//     const employees = await collection.find().toArray()
+//     return employees
+//   } catch (err) {
+//     console.log(err)
 //   }
-// ]
+// }
+
+// async function query() {
+//   try {
+//     const collection = await configDb.getCollection(collectionName);
+//     const aggregationPipeline = [
+//       {
+//         $lookup: {
+//           from: 'department',
+//           let: { departmentId: { $toObjectId: { $ifNull: ["$departmentId", null] } } },
+//           pipeline: [
+//             {
+//               $match: {
+//                 $expr: { $eq: ["$_id", "$$departmentId"] }
+//               }
+//             }
+//           ],
+//           as: 'department'
+//         }
+//       },
+//       {
+//         $unwind: {
+//           path: '$department',
+//           preserveNullAndEmptyArrays: true
+//         }
+//       }
+//     ];
+//     const employeesWithDepartments = await collection.aggregate(aggregationPipeline).toArray();
+//     return employeesWithDepartments;
+//   } catch (err) {
+//     console.log(err);
+//     throw err; // it is generally better to throw the error so that the caller can handle it appropriately
+//   }
+// }

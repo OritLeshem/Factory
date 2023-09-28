@@ -41,7 +41,7 @@ async function add(department){
     await collection.insertOne(department)
     return department
   }catch(err){
-    console.log(`could not add department ${department}`)
+    console.log(`could not add department ${department.departmentName}`)
     throw err
   }
 }
@@ -71,15 +71,3 @@ module.exports = {
   add,
   update
 }
-// [
-//   {
-//       "_id": "6513827bb38f9013ca48e084",
-//       "departmentManager": "Yael",
-//       "departmentName": "Avi"
-//   },
-//   {
-//       "_id": "65138ff3b38f9013ca48e085",
-//       "departmentManager": "Sam",
-//       "departmentName": "Dana"
-//   }
-// ]

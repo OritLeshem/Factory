@@ -5,16 +5,61 @@
   <meta charset="UTF-8">
   <title>Employees</title>
   <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
     table {
-      width: 100%;
+      width: 70%;
       border-collapse: collapse;
+      background: #fff;
+      margin: 20px auto;
+      box-shadow: 0px 0px 10px #ccc;
     }
 
     th,
     td {
-      padding: 8px;
+      padding: 12px;
       text-align: left;
       border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    button {
+      display: inline-block;
+      background: #28a745;
+      color: #fff;
+      padding: 10px 20px;
+      margin: 20px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+
+    select {
+      padding: 10px;
+      margin: 20px;
+      border: 1px solid #ddd;
     }
   </style>
 </head>
@@ -44,7 +89,6 @@
       try {
         const res = await fetch(`${baseUrl}/department`);
         const departments = await res.json();
-        console.log('departments', departments)
         const selectElement = document.getElementById('departmentFilter');
         departments.forEach(dept => {
           const optionElement = document.createElement('option');
@@ -68,9 +112,15 @@
           const deptCell = document.createElement('td');
           const shiftCell = document.createElement('td');
 
-          nameCell.innerHTML = `<a href="${baseUrl}/edit-employee/${emp._id}">${emp.firstName} ${emp.lastName}</a>`;
-          deptCell.innerHTML = `<a href="${baseUrl}/edit-department/${emp.departmentId}">${emp.department.departmentName}</a>`;
-          shiftCell.textContent = 'Shift data here'; // Placeholder text for shifts
+          nameCell.innerHTML = `<a href='editEmployee.html'>${emp.firstName} ${emp.lastName}</a>`;
+          nameCell.innerHTML = `<a href='editEmployee.html?id=${emp._id}'>${emp.firstName} ${emp.lastName}</a>`;
+          const shiftList = document.createElement('ul');
+          emp.shifts.forEach(shift => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `Date: ${formatDate(shift.date)}\u00A0\u00A0\u00A0\u00A0Time: ${formatTime(shift.startingHour, shift.endingHour)}`;
+            shiftList.appendChild(listItem);
+          });
+          shiftCell.appendChild(shiftList);
 
           row.appendChild(nameCell);
           row.appendChild(deptCell);
@@ -86,10 +136,22 @@
       const selectedDeptId = document.getElementById('departmentFilter').value;
       const rows = document.getElementById('employeeTableBody').children;
       Array.from(rows).forEach(row => {
-        const deptCell = row.children[1].firstChild; // <a> inside the department cell
-        const deptId = deptCell.href.split('/').pop(); // Extract department ID from the URL
-        row.style.display = (!selectedDeptId || selectedDeptId === deptId) ? '' : 'none';
+        const deptCell = row.children[1].firstChild;
+        if (deptCell) {
+          const deptId = deptCell.href.split('/').pop();
+          row.style.display = (!selectedDeptId || selectedDeptId === deptId) ? '' : 'none';
+        }
       });
+    }
+
+    function formatDate(dateString) {
+      const options = { month: 'long', day: 'numeric', year: 'numeric' };
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', options);
+    }
+
+    function formatTime(startingHour, endingHour) {
+      return `${startingHour} - ${endingHour}`;
     }
 
     fetchDepartments();

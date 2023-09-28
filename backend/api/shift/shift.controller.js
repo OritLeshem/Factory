@@ -37,7 +37,7 @@ async function addShift(req,res){
     const shift=req.body
     console.log("shift body",shift)
     const addedShift=await shiftService.add(shift)
-    res.json(`added shift ${shift.name}`)
+    res.json(`added shift ${shift._id}`)
   }
   catch(err){
     console.log(`could not add shift `)

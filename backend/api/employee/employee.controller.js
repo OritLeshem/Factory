@@ -12,7 +12,8 @@ async function getAllEmployees(req,res) {
 }
 async function getEmployeeById(req, res) {
   try {
-    const employeeId = req.params.id; // Getting ID from URL parameter
+    const employeeId = req.params.id;
+    console.log(employeeId) // Getting ID from URL parameter
     const employee = await employeeService.getById(employeeId);
     res.json(employee);
   } catch (err) {
@@ -47,6 +48,7 @@ async function addEmployee(req,res){
 }
 
 async function updateEmployee(req, res) {
+  console.log("update controller employee", req.params.id)
   try {
     const employee = req.body
     console.log("constroller body",employee)

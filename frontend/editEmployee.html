@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Employee</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    form,
+    #registerShift,
+    #shiftsTable {
+      width: 50%;
+      margin: auto;
+    }
+
+    form {
+      background: #fff;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0px 0px 10px #ccc;
+    }
+
+    label,
+    input,
+    select {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input,
+    select {
+      width: calc(100% - 20px);
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    button {
+      display: inline-block;
+      background: #28a745;
+      color: #fff;
+      padding: 10px 20px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+
+    #shiftsTable {
+      background: #fff;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    #registerShift {
+      background: #fff;
+      padding: 30px;
+      box-shadow: 0px 0px 10px #ccc;
+    }
+
+    #registerShift label,
+    #registerShift select,
+    #registerShift button {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <form id="editEmployeeForm">
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" name="firstName" value="" required>
+
+    <label for="lastName">Last Name:</label>
+    <input type="text" id="lastName" name="lastName" value="" required>
+
+    <button type="button" onclick="updateEmployee()">Update</button>
+    <button type="button" onclick="deleteEmployee()">Delete</button>
+  </form>
+  <div id="shiftsTable">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Starting Hour</th>
+          <th>Ending Hour</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Populate the table rows dynamically -->
+      </tbody>
+    </table>
+  </div>
+  <div id="registerShift">
+    <label for="existingShift">Register for an existing shift:</label>
+    <select id="existingShift">
+      <!-- Populate the shift options dynamically -->
+    </select>
+    <button type="button" onclick="registerShift()">Register</button>
+    <button type="button" onclick="location.href='employee.html'">Go Back</button>
+  </div>
+  <script>
+    const baseUrl = 'http://localhost:5001';
+    const urlParams = new URLSearchParams(window.location.search);
+    const employeeId = urlParams.get('id'); // Extract the ID from the URL
+
+    async function fetchEmployeeData() {
+      try {
+        const res = await fetch(`${baseUrl}/employee/${employeeId}`);
+        const employee = await res.json();
+        document.getElementById('firstName').value = employee.firstName;
+        document.getElementById('lastName').value = employee.lastName;
+      } catch (err) {
+        console.error("Error fetching employee data", err);
+      }
+    }
+
+    async function updateEmployee() {
+      try {
+        const firstName = document.getElementById('firstName').value;
+        const lastName = document.getElementById('lastName').value;
+
+        const res = await fetch(`${baseUrl}/employee/${employeeId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, lastName })
+        });
+
+        if (res.ok) {
+          alert('Employee Updated Successfully');
+        } else {
+          alert('Error Updating Employee');
+        }
+      } catch (err) {
+        console.error("Error updating employee", err);
+      }
+    }
+
+    async function deleteEmployee() {
+      try {
+        const res = await fetch(`${baseUrl}/employee/${employeeId}`, {
+          method: 'DELETE'
+        });
+
+        if (res.ok) {
+          alert('Employee Deleted Successfully');
+          window.location.href = 'employee.html'; // Redirect to the employee list page
+        } else {
+          alert('Error Deleting Employee');
+        }
+      } catch (err) {
+        console.error("Error deleting employee", err);
+      }
+    }
+
+    async function registerShift() {
+      try {
+        const shiftId = document.getElementById('existingShift').value;
+
+        const res = await fetch(`${baseUrl}/employee/${employeeId}/registerShift`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shiftId })
+        });
+
+        if (res.ok) {
+          alert('Shift Registered Successfully');
+        } else {
+          alert('Error Registering Shift');
+        }
+      } catch (err) {
+        console.error("Error registering shift", err);
+      }
+    }
+
+    window.onload = fetchEmployeeData;
+  </script>
+</body>
+
+</html>

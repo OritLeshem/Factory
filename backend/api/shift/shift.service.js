@@ -41,7 +41,7 @@ async function add(shift){
     await collection.insertOne(shift)
     return shift
   }catch(err){
-    console.log(`could not add shift ${shift}`)
+    console.log(`could not add shift ${shift._id}`)
     throw err
   }
 }
@@ -70,15 +70,3 @@ module.exports = {
   add,
   update
 }
-// [
-//   {
-//       "_id": "6513827bb38f9013ca48e084",
-//       "shiftManager": "Yael",
-//       "shiftName": "Avi"
-//   },
-//   {
-//       "_id": "65138ff3b38f9013ca48e085",
-//       "shiftManager": "Sam",
-//       "shiftName": "Dana"
-//   }
-// ]
