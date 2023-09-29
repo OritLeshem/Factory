@@ -145,13 +145,16 @@
 
     async function updateEmployee() {
       try {
+        const resGetEmploy = await fetch(`${baseUrl}/employee/${employeeId}`);
+        const employee = await resGetEmploy.json();
         const firstName = document.getElementById('firstName').value;
         const lastName = document.getElementById('lastName').value;
+        const updatedEmployee = { ...employee, firstName: firstName, lastName: lastName }; console.log(`Updating Employee: ${firstName} ${lastName}`); // log the updated values
 
         const res = await fetch(`${baseUrl}/employee/${employeeId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ firstName, lastName })
+          body: JSON.stringify({ updatedEmployee })
         });
 
         if (res.ok) {

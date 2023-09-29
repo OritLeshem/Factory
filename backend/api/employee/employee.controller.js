@@ -48,16 +48,14 @@ async function addEmployee(req,res){
 }
 
 async function updateEmployee(req, res) {
-  console.log("update controller employee", req.params.id)
   try {
-    const employee = req.body
-    console.log("constroller body",employee)
-    const updatedEmployee = await employeeService.update(employee)
-    res.json('updatedEmployee')
+      const employee = req.body;
+      console.log("Controller Received", employee); // log received values
+      const updatedEmployee = await employeeService.update(employee);
+      res.json(updatedEmployee); // return updated employee object
   } catch (err) {
-    logger.error('Failed to update employee', err)
-    res.status(500).send({ err: 'Failed to update employee' })
-
+      console.error('Failed to update employee', err)
+      res.status(500).send({ err: 'Failed to update employee' })
   }
 }
 module.exports = { 
