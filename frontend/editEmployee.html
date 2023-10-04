@@ -76,20 +76,48 @@
       color: white;
     }
 
-    tr:hover {
+    /* tr:hover {
       background-color: #f1f1f1;
-    }
+    } */
 
-    #registerShift {
+
+
+
+
+    #shiftsTable,
+    #allShiftsTable {
+      width: 50%;
       background: #fff;
-      padding: 30px;
+      margin: 30px auto;
+      padding: 20px;
       box-shadow: 0px 0px 10px #ccc;
     }
 
-    #registerShift label,
-    #registerShift select,
-    #registerShift button {
-      margin-bottom: 20px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    /* tr:hover {
+      background-color: #f1f1f1;
+    } */
+
+    #allShiftsTable tr:hover {
+      background-color: #e1e1e1;
+      /* Slightly darker shade than the existing hover color */
+      cursor: pointer;
     }
   </style>
 </head>
@@ -119,37 +147,120 @@
       </tbody>
     </table>
   </div>
-  <div id="registerShift">
-    <label for="existingShift">Register for an existing shift:</label>
-    <select id="existingShift">
-      <!-- Populate the shift options dynamically -->
-    </select>
-    <button type="button" onclick="registerShift()">Register</button>
-    <button type="button" onclick="location.href='employee.html'">Go Back</button>
+
+  <div id="allShiftsTable">
+    <h2>All Shifts:</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Starting Hour</th>
+          <th>Ending Hour</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Populate this table with all shifts -->
+      </tbody>
+    </table>
   </div>
   <script>
     const baseUrl = 'http://localhost:5001';
     const urlParams = new URLSearchParams(window.location.search);
     const employeeId = urlParams.get('id'); // Extract the ID from the URL
+    let employee = {};
+    let shiftsArray = [];
+
+    async function fetchShiftsData() {
+      try {
+        const res = await fetch(`${baseUrl}/shift`);
+        shiftsArray = await res.json();
+        populateAllShiftsTable(shiftsArray);
+        fetchEmployeeData();
+      } catch (err) {
+        console.error("Error fetching shifts data", err);
+      }
+    }
 
     async function fetchEmployeeData() {
       try {
         const res = await fetch(`${baseUrl}/employee/${employeeId}`);
-        const employee = await res.json();
+        employee = await res.json();
         document.getElementById('firstName').value = employee.firstName;
         document.getElementById('lastName').value = employee.lastName;
+        populateShiftsTable(employee.shifts);
       } catch (err) {
         console.error("Error fetching employee data", err);
       }
     }
 
+    function populateShiftsTable(shiftDetails) {
+      const tbody = document.querySelector('#shiftsTable tbody');
+      tbody.innerHTML = '';
+      const matchedShifts = shiftsArray.filter(shift => shiftDetails.includes(shift._id));
+      if (matchedShifts && Array.isArray(matchedShifts)) {
+        matchedShifts.forEach(shift => {
+          const row = document.createElement('tr');
+          const dateCell = document.createElement('td');
+          dateCell.textContent = new Date(shift.date).toDateString();
+          row.appendChild(dateCell);
+          const startHourCell = document.createElement('td');
+          startHourCell.textContent = shift.startingHour;
+          row.appendChild(startHourCell);
+          const endHourCell = document.createElement('td');
+          endHourCell.textContent = shift.endingHour;
+          row.appendChild(endHourCell);
+          tbody.appendChild(row);
+        });
+      }
+    }
+
+    function populateAllShiftsTable(shifts) {
+      const tbody = document.querySelector('#allShiftsTable tbody');
+
+      // Clear existing rows
+      tbody.innerHTML = '';
+
+      if (shifts && Array.isArray(shifts)) {
+        shifts.forEach(shift => {
+          const row = document.createElement('tr');
+
+          row.addEventListener('click', () => registerOrAlert(shift));
+
+          const dateCell = document.createElement('td');
+          dateCell.textContent = new Date(shift.date).toDateString();
+          row.appendChild(dateCell);
+
+          const startHourCell = document.createElement('td');
+          startHourCell.textContent = shift.startingHour;
+          row.appendChild(startHourCell);
+
+          const endHourCell = document.createElement('td');
+          endHourCell.textContent = shift.endingHour;
+          row.appendChild(endHourCell);
+
+          tbody.appendChild(row);
+        });
+      }
+    }
+
+    function registerOrAlert(shift) {
+      if (employee.shifts && employee.shifts.includes(shift._id)) {
+        alert('You are already registered for this shift.');
+      } else {
+        employee.shifts.push(shift._id);
+        // Call your backend update function here if needed
+
+        // Refresh the tables to reflect the change
+        populateShiftsTable(employee.shifts);
+        populateAllShiftsTable(shiftsArray);
+      }
+    }
+
     async function updateEmployee() {
       try {
-        const resGetEmploy = await fetch(`${baseUrl}/employee/${employeeId}`);
-        const employee = await resGetEmploy.json();
         const firstName = document.getElementById('firstName').value;
         const lastName = document.getElementById('lastName').value;
-        const updatedEmployee = { ...employee, firstName: firstName, lastName: lastName }; console.log(`Updating Employee: ${firstName} ${lastName}`); // log the updated values
+        const updatedEmployee = { ...employee, firstName: firstName, lastName: lastName };
 
         const res = await fetch(`${baseUrl}/employee/${employeeId}`, {
           method: 'PUT',
@@ -175,7 +286,7 @@
 
         if (res.ok) {
           alert('Employee Deleted Successfully');
-          window.location.href = 'employee.html'; // Redirect to the employee list page
+          window.location.href = 'employee.html';
         } else {
           alert('Error Deleting Employee');
         }
@@ -187,7 +298,6 @@
     async function registerShift() {
       try {
         const shiftId = document.getElementById('existingShift').value;
-
         const res = await fetch(`${baseUrl}/employee/${employeeId}/registerShift`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -204,8 +314,9 @@
       }
     }
 
-    window.onload = fetchEmployeeData;
+    window.onload = fetchShiftsData;
   </script>
 </body>
+
 
 </html>

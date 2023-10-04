@@ -4,13 +4,6 @@ const ObjectId = require('mongodb').ObjectId
 const collectionName = 'employee'
 
 
-
-
-
-
-
-
-
 async function getById(employeeId) {
   try {
       const collection = await configDb.getCollection(collectionName)
@@ -46,7 +39,10 @@ async function add(employee){
 }
 
 async function update(employee){
-  try{
+  console.log("service update employee")
+  console.log("^^^^^^^^^^^^^^^^^^^^^^^")
+  try{ 
+
     const employeeToSave={
       firstName: employee.firstName,
       lastName: employee.lastName,
@@ -55,6 +51,9 @@ async function update(employee){
       shifts: employee.shifts
       
   }
+  console.log("employeeToSave", employeeToSave)
+  console.log("%%%%%%%%%%%%%%%%%%%%%%%")
+
   const collection =await configDb.getCollection(collectionName)
   await collection.updateOne({ _id: new ObjectId(employee._id) }, { $set: employeeToSave })
 return employee
@@ -72,6 +71,139 @@ module.exports = {
   add,
   update
 }
+async function query() {
+  try {
+    const collection = await configDb.getCollection(collectionName);
+    const aggregationPipeline = [
+      // Convert shifts array strings to ObjectIDs
+      {
+        $addFields: {
+          shifts: {
+            $map: {
+              input: "$shifts",
+              as: "shiftId",
+              in: {
+                $toObjectId: "$$shiftId"
+              }
+            }
+          },
+          departmentId: {
+            $cond: {
+              if: { $eq: [{ $type: "$departmentId" }, "string"] },
+              then: { $toObjectId: "$departmentId" },
+              else: "$departmentId" // keep it as is, if it's not a string
+            }
+          }
+        }
+      },
+      // Join with 'shift'
+      {
+        $lookup: {
+          from: 'shift',
+          localField: 'shifts',
+          foreignField: '_id',
+          as: 'shiftDetails'
+        }
+      },
+      // Join with 'department'
+      {
+        $lookup: {
+          from: 'department',
+          localField: 'departmentId',
+          foreignField: '_id',
+          as: 'department'
+        }
+      },
+      {
+        $unwind: {
+          path: '$department',
+          preserveNullAndEmptyArrays: true
+        }
+      }
+    ];
+
+    const employeesWithDetails = await collection.aggregate(aggregationPipeline).toArray();
+    return employeesWithDetails;
+  } catch (err) {
+    console.log("Error during aggregation:", err);
+    throw err;
+  }
+}
+
+
+
+// async function query() {
+//   try {
+//     const collection = await configDb.getCollection(collectionName);
+//     const aggregationPipeline = [
+//       // $lookup for department
+//       {
+//         $lookup: {
+//           from: 'department',
+//           let: {
+//             departmentId: {
+//               $cond: {
+//                 if: { $eq: [{ $type: "$departmentId" }, "string"] },
+//                 then: { $toObjectId: "$departmentId" },
+//                 else: "$departmentId" // keep it as is, if it's not a string
+//               }
+//             }
+//           },
+//           pipeline: [
+//             {
+//               $match: {
+//                 $expr: { $eq: ["$_id", "$$departmentId"] }
+//               }
+//             }
+//           ],
+//           as: 'department'
+//         }
+//       },
+//       {
+//         $unwind: {
+//           path: '$department',
+//           preserveNullAndEmptyArrays: true
+//         }
+//       },
+
+//       // $lookup for shifts
+//       {
+//         $lookup: {
+//           from: 'shifts',  // Assuming your shifts collection is named "shifts"
+//           localField: 'shifts',
+//           foreignField: '_id',
+//           as: 'shiftsDetails' // New array for detailed shifts info
+//         }
+//       },
+
+//       // Unwind shiftsDetails and then group them back 
+//       {
+//         $unwind: {
+//           path: '$shiftsDetails',
+//           preserveNullAndEmptyArrays: true
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: '$_id', // Group by the original document ID
+//           firstName: { $first: '$firstName' },
+//           lastName: { $first: '$lastName' },
+//           startWorkYear: { $first: '$startWorkYear' },
+//           departmentId: { $first: '$departmentId' },
+//           department: { $first: '$department' },
+//           shifts: { $first: '$shifts' },
+//           shiftsDetails: { $push: '$shiftsDetails' }
+//         }
+//       }
+//     ];
+
+//     const employeesWithDetails = await collection.aggregate(aggregationPipeline).toArray();
+//     return employeesWithDetails;
+//   } catch (err) {
+//     console.log("Error during aggregation:", err);
+//     throw err;
+//   }
+// }
 
 // async function query() {
 //   try {
@@ -87,6 +219,66 @@ module.exports = {
 //   try {
 //     const collection = await configDb.getCollection(collectionName);
 //     const aggregationPipeline = [
+//       {
+//         $lookup: {
+//           from: 'department',
+//           let: {
+//             departmentId: {
+//               $cond: {
+//                 if: { $eq: [{ $type: "$departmentId" }, "string"] },
+//                 then: { $toObjectId: "$departmentId" },
+//                 else: "$departmentId" // keep it as is, if it's not a string
+//               }
+//             }
+//           },
+//           pipeline: [
+//             {
+//               $match: {
+//                 $expr: { $eq: ["$_id", "$$departmentId"] }
+//               }
+//             }
+//           ],
+//           as: 'department'
+//         }
+//       },
+//       {
+//         $unwind: {
+//           path: '$department',
+//           preserveNullAndEmptyArrays: true
+//         }
+//       }
+//     ];
+//     const employeesWithDepartments = await collection.aggregate(aggregationPipeline).toArray();
+//     return employeesWithDepartments;
+//   } catch (err) {
+//     console.log("Error during aggregation:", err);
+//     throw err;
+//   }
+// }
+
+
+
+// async function query() {
+//   try {
+//     const collection = await configDb.getCollection(collectionName);
+    
+//     const aggregationPipeline = [
+//       {
+//                 $lookup: {
+//                   from: 'shift',
+//                   let: { shiftIds: { $map: { input: "$shifts", as: "shift", in: { $toObjectId: "$$shift" } } } },
+//                   pipeline: [
+//                     {
+//                       $match: {
+//                         $expr: {
+//                           $in: ["$_id", "$$shiftIds"]
+//                         }
+//                       }
+//                     }
+//                   ],
+//                   as: 'shifts'
+//                 }
+//               },
 //       {
 //         $lookup: {
 //           from: 'department',
@@ -108,66 +300,11 @@ module.exports = {
 //         }
 //       }
 //     ];
-//     const employeesWithDepartments = await collection.aggregate(aggregationPipeline).toArray();
-//     return employeesWithDepartments;
+
+//     const employeesWithDetails = await collection.aggregate(aggregationPipeline).toArray();
+//     return employeesWithDetails;
 //   } catch (err) {
-//     console.log(err);
-//     throw err; // it is generally better to throw the error so that the caller can handle it appropriately
+//     console.log("Error during aggregation:", err);
+//     throw err;
 //   }
 // }
-async function query() {
-  try {
-    const collection = await configDb.getCollection(collectionName);
-    const aggregationPipeline = [
-      {
-        $lookup: {
-          from: 'department',
-          let: { departmentId: { $toObjectId: { $ifNull: ["$departmentId", null] } } },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ["$_id", "$$departmentId"] }
-              }
-            }
-          ],
-          as: 'department'
-        }
-      },
-      {
-        $unwind: {
-          path: '$department',
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $lookup: {
-          from: 'shift',
-          let: { shiftIds: { $map: { input: "$shifts", as: "id", in: { $toObjectId: { $ifNull: ["$$id", null] } } } } }, // Mapping shifts array to ObjectId array
-          pipeline: [
-            {
-              $match: {
-                $expr: { $in: ["$_id", "$$shiftIds"] }
-              }
-            }
-          ],
-          as: 'shifts'
-        }
-      }
-    ];
-    
-    // Debug: Log the aggregation pipeline
-    console.log("Aggregation Pipeline:");
-    console.log(JSON.stringify(aggregationPipeline, null, 2));
-    
-    const employeesWithDepartmentsAndShifts = await collection.aggregate(aggregationPipeline).toArray();
-    
-    // Debug: Log the result of the aggregation
-    console.log("Aggregation Result:");
-    console.log(JSON.stringify(employeesWithDepartmentsAndShifts, null, 2));
-    
-    return employeesWithDepartmentsAndShifts;
-  } catch (err) {
-    console.log("Error during aggregation:", err);
-    throw err; 
-  }
-}

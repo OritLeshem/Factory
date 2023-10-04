@@ -112,10 +112,12 @@
           const deptCell = document.createElement('td');
           const shiftCell = document.createElement('td');
 
-          nameCell.innerHTML = `<a href='editEmployee.html'>${emp.firstName} ${emp.lastName}</a>`;
           nameCell.innerHTML = `<a href='editEmployee.html?id=${emp._id}'>${emp.firstName} ${emp.lastName}</a>`;
+          deptCell.textContent = emp.department.departmentName;
+          deptCell.setAttribute('data-dept-id', emp.department._id);
+
           const shiftList = document.createElement('ul');
-          emp.shifts.forEach(shift => {
+          emp.shiftDetails.forEach(shift => {
             const listItem = document.createElement('li');
             listItem.textContent = `Date: ${formatDate(shift.date)}\u00A0\u00A0\u00A0\u00A0Time: ${formatTime(shift.startingHour, shift.endingHour)}`;
             shiftList.appendChild(listItem);
@@ -136,11 +138,9 @@
       const selectedDeptId = document.getElementById('departmentFilter').value;
       const rows = document.getElementById('employeeTableBody').children;
       Array.from(rows).forEach(row => {
-        const deptCell = row.children[1].firstChild;
-        if (deptCell) {
-          const deptId = deptCell.href.split('/').pop();
-          row.style.display = (!selectedDeptId || selectedDeptId === deptId) ? '' : 'none';
-        }
+        const deptCell = row.children[1];
+        const deptId = deptCell.getAttribute('data-dept-id');
+        row.style.display = (!selectedDeptId || selectedDeptId === deptId) ? '' : 'none';
       });
     }
 
@@ -156,6 +156,7 @@
 
     fetchDepartments();
     fetchEmployees();
+
   </script>
 </body>
 

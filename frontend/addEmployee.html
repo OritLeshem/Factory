@@ -28,6 +28,7 @@
       try {
         const formData = new FormData(document.getElementById('addEmployeeForm'));
         const employee = Object.fromEntries(formData.entries());
+        employee.shifts = ['6515be3a5139fda7c527be60']
         const res = await fetch('http://localhost:5001/employee', {
           method: 'POST',
           headers: {
