@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Edit Employee</title>
+  <title>FACTORY</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -12,8 +12,23 @@
       padding: 0;
     }
 
+    *,
+    *:before,
+    *:after {
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #4CAF50;
+      /* Adding a subtle text shadow */
+      padding: 20px 30px;
+      margin-left: 30px;
+      margin-right: 30px;
+      display: inline-block;
+    }
+
     form,
-    #registerShift,
     #shiftsTable {
       width: 50%;
       margin: auto;
@@ -23,18 +38,17 @@
       background: #fff;
       padding: 30px;
       margin-bottom: 30px;
+      margin-top: 30px;
       box-shadow: 0px 0px 10px #ccc;
     }
 
     label,
-    input,
-    select {
+    input {
       display: block;
       margin-bottom: 10px;
     }
 
-    input,
-    select {
+    input {
       width: calc(100% - 20px);
       padding: 10px;
       border: 1px solid #ddd;
@@ -76,11 +90,11 @@
       color: white;
     }
 
-    /* tr:hover {
-      background-color: #f1f1f1;
-    } */
-
-
+    #registerShift {
+      background: #fff;
+      padding: 30px;
+      box-shadow: 0px 0px 10px #ccc;
+    }
 
 
 
@@ -110,10 +124,6 @@
       color: white;
     }
 
-    /* tr:hover {
-      background-color: #f1f1f1;
-    } */
-
     #allShiftsTable tr:hover {
       background-color: #e1e1e1;
       /* Slightly darker shade than the existing hover color */
@@ -123,6 +133,7 @@
 </head>
 
 <body>
+  <h1>Edit Employee</h1>
   <form id="editEmployeeForm">
     <label for="firstName">First Name:</label>
     <input type="text" id="firstName" name="firstName" value="" required>
@@ -132,6 +143,7 @@
 
     <button type="button" onclick="updateEmployee()">Update</button>
     <button type="button" onclick="deleteEmployee()">Delete</button>
+    <button type="button" onclick="location.href='employee.html'">Go Back</button>
   </form>
   <div id="shiftsTable">
     <table>

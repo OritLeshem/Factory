@@ -3,26 +3,92 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Add Employee</title>
+  <title>FACTORY</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    *,
+    *:before,
+    *:after {
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #4CAF50;
+      padding: 20px 30px;
+      margin-left: 30px;
+      margin-right: 30px;
+      display: inline-block;
+    }
+
+    form {
+      width: 50%;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      margin-bottom: 30px;
+      margin-top: 30px;
+      box-shadow: 0px 0px 10px #ccc;
+    }
+
+    label,
+    input {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: calc(100% - 20px);
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    button {
+      display: inline-block;
+      background: #28a745;
+      color: #fff;
+      padding: 10px 20px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    button:last-child {
+      margin-right: 0;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+  </style>
 </head>
 
 <body>
+  <h1>Add New Employee</h1>
   <form id="addEmployeeForm">
     <label for="firstName">First Name:</label>
-    <input type="text" id="firstName" name="firstName" required><br>
+    <input type="text" id="firstName" name="firstName" required>
 
     <label for="lastName">Last Name:</label>
-    <input type="text" id="lastName" name="lastName" required><br>
+    <input type="text" id="lastName" name="lastName" required>
 
     <label for="startWorkYear">Start Work Year:</label>
-    <input type="date" id="startWorkYear" name="startWorkYear" required><br>
+    <input type="date" id="startWorkYear" name="startWorkYear" required>
 
     <label for="departmentId">Department ID:</label>
     <input type="text" id="departmentId" name="departmentId" required><br>
 
     <button type="button" onclick="addEmployee()">Add Employee</button>
-    <button type="button" onclick="location.href='employee.html'">Cansel</button>
+    <button type="button" onclick="location.href='employee.html'">Cancel</button>
   </form>
+
   <script>
     async function addEmployee() {
       try {
