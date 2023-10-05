@@ -22,7 +22,16 @@ async function getEmployeeById(req, res) {
 }
 
 
-
+// async function removeEmployeefromDepartment(employeeId) {
+//   try {
+//     // const employeeId = req.params.id
+//     const removedEmployee = await employeeService.removeById(employeeId)
+//     res.json(`removed employee ${removedEmployee}`)
+//   } catch (err) {
+//     console.log('cannot remove employee', req.params.id)
+//     res.status(500).send({ err: 'Failed to remove employee' })
+//   }
+// }
 async function removeEmployee(req, res) {
   try {
     const employeeId = req.params.id
@@ -65,5 +74,6 @@ module.exports = {
   getEmployeeById,
   removeEmployee,
   addEmployee,
-  updateEmployee
+  updateEmployee,
+  // removeEmployeefromDepartment
 }

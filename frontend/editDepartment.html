@@ -3,15 +3,219 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Factory</title>
+  <title>FACTORY</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
 
+    *,
+    *:before,
+    *:after {
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #4CAF50;
+      /* Adding a subtle text shadow */
+      padding: 20px 30px;
+      margin-left: 30px;
+      margin-right: 30px;
+      display: inline-block;
+    }
+
+    form {
+      width: 50%;
+      margin: auto;
+    }
+
+    form {
+      background: #fff;
+      padding: 30px;
+      margin-bottom: 30px;
+      margin-top: 30px;
+      box-shadow: 0px 0px 10px #ccc;
+    }
+
+    label,
+    input {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: calc(100% - 20px);
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    button {
+      display: inline-block;
+      background: #28a745;
+      color: #fff;
+      padding: 10px 20px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+  </style>
 </head>
 
 <body>
   <h1>Edit Department</h1>
-  <button type="button" onclick="location.href='department.html'">Departments</button>
+  <form id="editDepartmentForm">
+    <label for="departmentName">Department Name:</label>
+    <input type="text" id="departmentName" name="departmentName" value="" required>
 
+    <label for="managerName">Manager Name:</label>
+    <input type="text" id="managerName" name="managerName" value="" required>
+
+    <button type="button" onclick="updateDepartment()">Update</button>
+    <button type="button" onclick="deleteDepartment()">Delete</button>
+    <button type="button" onclick="location.href='department.html'">Go Back To department</button>
+  </form>
+
+
+
+  </div>
+  <script>
+    const baseUrl = 'http://localhost:5001';
+    const urlParams = new URLSearchParams(window.location.search);
+    const departmentId = urlParams.get('id'); // Extract the ID from the URL
+    let department = {};
+
+
+
+    async function fetchDepartmentData() {
+      try {
+        const res = await fetch(`${baseUrl}/department/${departmentId}`);
+        department = await res.json();
+        document.getElementById('departmentName').value = department.departmentName;
+        document.getElementById('managerName').value = department.departmentManager;
+      } catch (err) {
+        console.error("Error fetching department data", err);
+      }
+    }
+
+
+
+
+    async function updateDepartment() {
+      try {
+        const departmentName = document.getElementById('departmentName').value;
+        const managerName = document.getElementById('managerName').value;
+        const updatedDepartment = { ...department, departmentName: departmentName, managerName: managerName };
+
+        const res = await fetch(`${baseUrl}/department/${departmentId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ updatedDepartment })
+        });
+
+        if (res.ok) {
+          alert('Department Updated Successfully');
+        } else {
+          alert('Error Updating Department');
+        }
+      } catch (err) {
+        console.error("Error updating Department", err);
+      }
+    }
+    async function deleteDepartment() {
+      console.log(department)
+      try {
+        console.log("Starting to delete department and its associated employees...");
+
+        if (department?.employees && department.employees.length > 0) {
+          for (let emp of department.employees) {
+            console.log(`Attempting to delete employee with ID ${emp.id}...`);
+            const employeeResponse = await fetch(`${baseUrl}/employee/${emp.id}`, { method: 'DELETE' });
+
+          }
+        }
+
+        console.log("Attempting to delete department...");
+        const departmentResponse = await fetch(`${baseUrl}/department/${departmentId}`, { method: 'DELETE' });
+        if (!departmentResponse.ok) {
+          console.error(`Failed to delete department with ID ${departmentId}. Response status: ${departmentResponse.status}`);
+          throw new Error("Error Deleting Department");
+        } else {
+          console.log("Successfully deleted department");
+          alert('Department Deleted Successfully');
+          window.location.href = 'Department.html';
+        }
+      } catch (err) {
+        console.error("Error during deletion process:", err);
+        alert('Error occurred during deletion process. Check the console for more details.');
+      }
+    }
+
+    // async function deleteDepartment() {
+    //   try {
+
+    //     const res = await fetch(`${baseUrl}/department/${departmentId}`, {
+    //       method: 'DELETE'
+    //     });
+
+    //     if (res.ok) {
+    //       alert('Department Deleted Successfully');
+    //       window.location.href = 'Department.html';
+    //     } else {
+    //       alert('Error Deleting Department');
+    //     }
+    //   } catch (err) {
+    //     console.error("Error deleting Department", err);
+    //   }
+    // }
+
+
+    fetchDepartmentData()
+  </script>
 </body>
+
 
 </html>

@@ -121,59 +121,64 @@
 
     async function fetchEmployees() {
       try {
-        const res = await fetch(`${baseUrl}/employee`);
+        const res = await fetch(`${baseUrl}/employee`)
         const employees = await res.json();
-        const tableBody = document.getElementById('employeeTableBody');
+        const tableBody = document.getElementById('employeeTableBody')
         employees.forEach(emp => {
-          const row = document.createElement('tr');
-          const nameCell = document.createElement('td');
-          const deptCell = document.createElement('td');
-          const shiftCell = document.createElement('td');
+          const row = document.createElement('tr')
+          const nameCell = document.createElement('td')
+          const deptCell = document.createElement('td')
+          const shiftCell = document.createElement('td')
 
-          nameCell.innerHTML = `<a href='editEmployee.html?id=${emp._id}'>${emp.firstName} ${emp.lastName}</a>`;
-          deptCell.textContent = emp.department.departmentName;
-          deptCell.setAttribute('data-dept-id', emp.department._id);
+          nameCell.innerHTML = `<a href='editEmployee.html?id=${emp._id}'>${emp.firstName} ${emp.lastName}</a>`
+          if (emp.department) {
+            deptCell.textContent = emp.department.departmentName
+            deptCell.setAttribute('data-dept-id', emp.department._id)
+            deptCell.setAttribute('data-dept-id', emp.department._id)
+          } else {
+            deptCell.textContent = "No Department";
+          }
 
-          const shiftList = document.createElement('ul');
+          const shiftList = document.createElement('ul')
           emp.shiftDetails.forEach(shift => {
-            const listItem = document.createElement('li');
-            listItem.textContent = `Date: ${formatDate(shift.date)}\u00A0\u00A0\u00A0\u00A0Time: ${formatTime(shift.startingHour, shift.endingHour)}`;
-            shiftList.appendChild(listItem);
+            const listItem = document.createElement('li')
+            listItem.textContent = `Date: ${formatDate(shift.date)}\u00A0\u00A0\u00A0\u00A0Time: ${formatTime(shift.startingHour, shift.endingHour)}`
+            shiftList.appendChild(listItem)
           });
-          shiftCell.appendChild(shiftList);
+          shiftCell.appendChild(shiftList)
 
-          row.appendChild(nameCell);
-          row.appendChild(deptCell);
-          row.appendChild(shiftCell);
-          tableBody.appendChild(row);
+          row.appendChild(nameCell)
+          row.appendChild(deptCell)
+          row.appendChild(shiftCell)
+          tableBody.appendChild(row)
         });
       } catch (err) {
-        console.error("Error fetching employees", err);
+        console.error("Error fetching employees", err)
       }
     }
 
     function filterByDepartment() {
-      const selectedDeptId = document.getElementById('departmentFilter').value;
-      const rows = document.getElementById('employeeTableBody').children;
+      const selectedDeptId = document.getElementById('departmentFilter').value
+      const rows = document.getElementById('employeeTableBody').children
       Array.from(rows).forEach(row => {
-        const deptCell = row.children[1];
-        const deptId = deptCell.getAttribute('data-dept-id');
-        row.style.display = (!selectedDeptId || selectedDeptId === deptId) ? '' : 'none';
+        const deptCell = row.children[1]
+        const deptId = deptCell.getAttribute('data-dept-id')
+        row.style.display = (!selectedDeptId || selectedDeptId === deptId) ? '' : 'none'
       });
     }
 
     function formatDate(dateString) {
-      const options = { month: 'long', day: 'numeric', year: 'numeric' };
+      const options = { month: 'long', day: 'numeric', year: 'numeric' }
       const date = new Date(dateString);
       return date.toLocaleDateString('en-US', options);
     }
 
     function formatTime(startingHour, endingHour) {
-      return `${startingHour} - ${endingHour}`;
+      return `${startingHour} - ${endingHour}`
     }
 
-    fetchDepartments();
-    fetchEmployees();
+    fetchDepartments()
+    fetchEmployees()
 
   </script>
 </body>

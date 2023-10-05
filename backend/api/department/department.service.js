@@ -43,9 +43,9 @@ const collectionName = 'department'
 //           employees: { $push: "$employees" }
 //         }
 //       }
-      
+
 //     ];
-    
+
 
 //     const departmentsWithEmployees = await collection.aggregate(aggregationPipeline).toArray();
 //     return departmentsWithEmployees;
@@ -64,17 +64,17 @@ const collectionName = 'department'
 //     console.log(err)
 //   }
 // }
-async function getById(departmentId) {
-  try {
-    const collection = await configDb.getCollection(collectionName)
-    const department = collection.findOne({ _id: new ObjectId(departmentId) })
-    // const department = await collection.findOne({ firstName: "Haim" });
-    return department
-  } catch (err) {
-    console.log(`while finding department ${departmentId}`, err)
-    throw err
-  }
-}
+// async function getById(departmentId) {
+//   try {
+//     const collection = await configDb.getCollection(collectionName)
+//     const department = collection.findOne({ _id: new ObjectId(departmentId) })
+//     // const department = await collection.findOne({ firstName: "Haim" });
+//     return department
+//   } catch (err) {
+//     console.log(`while finding department ${departmentId}`, err)
+//     throw err
+//   }
+// }
 
 async function removeById(departmentId) {
   try {
@@ -123,64 +123,152 @@ module.exports = {
   add,
   update
 }
-async function query() {
-  try {
-    const collection = await configDb.getCollection(collectionName);
+// async function query() {
+//   try {
+//     const collection = await configDb.getCollection(collectionName);
 
-    // Aggregation pipeline
-    const aggregationPipeline = [
-      {
-        $addFields: {
-          idString: { $toString: "$_id" }
-        }
-      },
-      {
-        $lookup: {
-          from: 'employee',
-          localField: 'idString',
-          foreignField: 'departmentId',
-          as: 'employeeData'
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          departmentManager: 1,
-          departmentName: 1,
-          employees: {
-            $map: {
-              input: "$employeeData",
-              as: "employee",
-              in: {
-                id: "$$employee._id",
-                firstName: "$$employee.firstName",
-                lastName: "$$employee.lastName"
-              }
+//     // Aggregation pipeline
+//     const aggregationPipeline = [
+//       {
+//         $addFields: {
+//           idString: { $toString: "$_id" }
+//         }
+//       },
+//       {
+//         $lookup: {
+//           from: 'employee',
+//           localField: 'idString',
+//           foreignField: 'departmentId',
+//           as: 'employeeData'
+//         }
+//       },
+//       {
+//         $project: {
+//           _id: 1,
+//           departmentManager: 1,
+//           departmentName: 1,
+//           employees: {
+//             $map: {
+//               input: "$employeeData",
+//               as: "employee",
+//               in: {
+//                 id: "$$employee._id",
+//                 firstName: "$$employee.firstName",
+//                 lastName: "$$employee.lastName"
+//               }
+//             }
+//           }
+//         }
+//       },
+//       {
+//         $unwind: {
+//           path: "$employees",
+//           preserveNullAndEmptyArrays: true
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: "$_id",
+//           departmentManager: { $first: "$departmentManager" },
+//           departmentName: { $first: "$departmentName" },
+//           employees: { $push: "$employees" }
+//         }
+//       }
+//     ];
+
+//     const departmentsWithEmployees = await collection.aggregate(aggregationPipeline).toArray();
+//     return departmentsWithEmployees;
+
+//   } catch (err) {
+//     console.log("Error during aggregation:", err);
+//     throw err;
+//   }
+// }
+function createAggregationPipeline(departmentId) {
+  const baseAggregation = [
+    {
+      $addFields: {
+        idString: { $toString: "$_id" }
+      }
+    },
+    {
+      $lookup: {
+        from: 'employee',
+        localField: 'idString',
+        foreignField: 'departmentId',
+        as: 'employeeData'
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        departmentManager: 1,
+        departmentName: 1,
+        employees: {
+          $map: {
+            input: "$employeeData",
+            as: "employee",
+            in: {
+              id: "$$employee._id",
+              firstName: "$$employee.firstName",
+              lastName: "$$employee.lastName"
             }
           }
         }
-      },
-      {
-        $unwind: {
-          path: "$employees",
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $group: {
-          _id: "$_id",
-          departmentManager: { $first: "$departmentManager" },
-          departmentName: { $first: "$departmentName" },
-          employees: { $push: "$employees" }
-        }
       }
-    ];
+    },
+    {
+      $unwind: {
+        path: "$employees",
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $group: {
+        _id: "$_id",
+        departmentManager: { $first: "$departmentManager" },
+        departmentName: { $first: "$departmentName" },
+        employees: { $push: "$employees" }
+      }
+    }
+  ];
 
-    const departmentsWithEmployees = await collection.aggregate(aggregationPipeline).toArray();
+  if (departmentId) {
+    // If departmentId is provided, add a $match stage at the beginning of the pipeline
+    baseAggregation.unshift({
+      $match: { _id: new ObjectId(departmentId) }
+    });
+  }
+
+  return baseAggregation;
+}
+
+async function query() {
+  try {
+    const collection = await configDb.getCollection(collectionName);
+    const departmentsWithEmployees = await collection.aggregate(createAggregationPipeline()).toArray();
     return departmentsWithEmployees;
-
   } catch (err) {
     console.log("Error during aggregation:", err);
     throw err;
   }
 }
+
+async function getById(departmentId) {
+  console.log('Department ID:', departmentId);
+
+  try {
+    const collection = await configDb.getCollection(collectionName);
+    const pipeline = createAggregationPipeline(departmentId);
+    console.log('Pipeline:', JSON.stringify(pipeline, null, 2));
+
+    const departmentWithEmployees = await collection.aggregate(createAggregationPipeline(departmentId)).toArray();
+    console.log('Aggregation Result:', departmentWithEmployees);
+
+    return departmentWithEmployees[0];
+  } catch (err) {
+    console.log(`Error while finding department ${departmentId}`, err);
+    throw err;
+  }
+}
+

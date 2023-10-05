@@ -3,12 +3,113 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Factory</title>
+  <title>FACTORY</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    *,
+    *:before,
+    *:after {
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #4CAF50;
+      padding: 20px 30px;
+      margin-left: 30px;
+      margin-right: 30px;
+      display: inline-block;
+    }
+
+    form {
+      width: 50%;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      margin-bottom: 30px;
+      margin-top: 30px;
+      box-shadow: 0px 0px 10px #ccc;
+    }
+
+    label,
+    input {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: calc(100% - 20px);
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    button {
+      display: inline-block;
+      background: #28a745;
+      color: #fff;
+      padding: 10px 20px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    button:last-child {
+      margin-right: 0;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>Add Department</h1>
+  <h1>Add New Department</h1>
+  <form id="addNewDepartment">
+    <label for="departmentName">Department Name:</label>
+    <input type="text" id="departmentName" name="departmentName" required>
+
+    <label for="departmentManager">Manager Name:</label>
+    <input type="text" id="departmentManager" name="departmentManager" required>
+
+
+
+    <button type="button" onclick="addDepartment()">Add Department</button>
+    <button type="button" onclick="location.href='department.html'">Cancel</button>
+  </form>
+
+  <script>
+    async function addDepartment() {
+      try {
+        const formData = new FormData(document.getElementById('addNewDepartment'));
+        const department = Object.fromEntries(formData.entries());
+
+        const res = await fetch('http://localhost:5001/department', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(department)
+        });
+        if (res.ok) {
+          alert('Department added successfully!');
+          location.href = 'department.html'; // redirect to the employee list page.
+        } else {
+          alert('Failed to add department!');
+        }
+      } catch (err) {
+        console.error('Error adding department', err);
+        alert('Failed to add department!');
+      }
+    }
+  </script>
 </body>
 
 </html>

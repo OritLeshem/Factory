@@ -98,20 +98,24 @@
       try {
         const res = await fetch(`${baseUrl}/department`)
         const departments = await res.json()
-        console.log('departments: ', departments)
+        // console.log('departments: ', departments)
         const departmentTable = document.getElementById('departmentsTable')
         departments.forEach(dep => {
           const row = document.createElement('tr')
           const nameCell = document.createElement('td')
           const managerCell = document.createElement('td')
-          const emplyeesCell = document.createElement('td')
+          const employeesCell = document.createElement('td')
           nameCell.innerHTML = `<a href='editDepartment.html?id=${dep._id}'>${dep.departmentName}</a>`
           managerCell.textContent = dep.departmentManager
-          emplyeesCell.textContent = 'employees'
+
+          let employeesNames = dep.employees.map(emp => `<a href ='editEmployee.html?id=${emp.id}'>${emp.firstName} ${emp.lastName}</a>`).join(', ');
+
+          if (!employeesNames) employeesNames = "No employees";
+          employeesCell.innerHTML = employeesNames;
 
           row.appendChild(nameCell);
           row.appendChild(managerCell);
-          row.appendChild(emplyeesCell);
+          row.appendChild(employeesCell);
 
           // Append the row to the table
           departmentTable.appendChild(row);
