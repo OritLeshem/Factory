@@ -78,9 +78,36 @@
       border: 1px solid #ddd;
     }
   </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 </head>
 
 <body>
+  <div id="headerContainer"></div>
+  <script>
+    $(function () {
+      $("#headerContainer").load("header.html");
+    });
+  </script>
+  <script>
+    // // Handle the login and logout logic
+    // document.addEventListener("DOMContentLoaded", function () {
+    //   const loginBtn = document.getElementById("loginBtn");
+    //   const logoutBtn = document.getElementById("logoutBtn");
+
+    //   loginBtn.addEventListener("click", function () {
+    //     // Logic for login (show a form, redirect to login page, etc.)
+    //     loginBtn.style.display = "none";
+    //     logoutBtn.style.display = "block";
+    //   });
+
+    //   logoutBtn.addEventListener("click", function () {
+    //     // Logic for logout (clear session, redirect, etc.)
+    //     logoutBtn.style.display = "none";
+    //     loginBtn.style.display = "block";
+    //   });
+    // });
+  </script>
   <h1>Employees</h1>
   <button onclick="location.href='addEmployee.html'">New Employee</button>
   <button onclick="location.href='department.html'">Departments</button>

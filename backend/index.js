@@ -4,6 +4,8 @@ const { connect: connectDB } = require('./config/db');
 const departmentRouter = require('./api/department/department.routes')
 const employeeRouter = require('./api/employee/employee.routes')
 const shiftRouter = require('./api/shift/shift.routes')
+const userRouter = require('./api/user/user.routes')
+
 
 const app = express()
 const PORT = 5001
@@ -31,7 +33,9 @@ app.use(express.json())
 app.use('/department', departmentRouter)
 app.use('/employee', employeeRouter)
 app.use('/shift', shiftRouter)
+app.use('/user', userRouter)
+
 
 app.listen(PORT, () => {
-  console.log(`app is listening on port http://localhost:${PORT}`)
+    console.log(`app is listening on port http://localhost:${PORT}`)
 })
