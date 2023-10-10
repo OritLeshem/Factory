@@ -166,25 +166,25 @@
       }
     }
     async function deleteDepartment() {
-      console.log(department)
+      // console.log(department)
       try {
         console.log("Starting to delete department and its associated employees...");
 
         if (department?.employees && department.employees.length > 0) {
           for (let emp of department.employees) {
-            console.log(`Attempting to delete employee with ID ${emp.id}...`);
+            // console.log(`Attempting to delete employee with ID ${emp.id}...`);
             const employeeResponse = await fetch(`${baseUrl}/employee/${emp.id}`, { method: 'DELETE' });
 
           }
         }
 
-        console.log("Attempting to delete department...");
+        // console.log("Attempting to delete department...");
         const departmentResponse = await fetch(`${baseUrl}/department/${departmentId}`, { method: 'DELETE' });
         if (!departmentResponse.ok) {
           console.error(`Failed to delete department with ID ${departmentId}. Response status: ${departmentResponse.status}`);
           throw new Error("Error Deleting Department");
         } else {
-          console.log("Successfully deleted department");
+          // console.log("Successfully deleted department");
           alert('Department Deleted Successfully');
           window.location.href = 'Department.html';
         }

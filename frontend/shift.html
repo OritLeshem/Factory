@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shifts Management</title>
+  <style>
+    /* Styles provided and explained previously */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    *,
+    *:before,
+    *:after {
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #4CAF50;
+      padding: 20px 30px;
+      margin-left: 30px;
+      margin-right: 30px;
+      display: inline-block;
+    }
+
+    table {
+      width: 70%;
+      border-collapse: collapse;
+      background: #fff;
+      margin: 20px auto;
+      box-shadow: 0px 0px 10px #ccc;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    button {
+      display: inline-block;
+      background: #28a745;
+      color: #fff;
+      padding: 10px 20px;
+      margin: 20px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      width: 150px;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+
+    select {
+      padding: 10px;
+      margin: 20px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Manage Shifts</h1>
+
+  <button onclick="openShiftForm()">Create New Shift</button>
+  <button onclick="location.href='department.html'">Departments</button>
+  <button onclick="location.href='employee.html'">Employees</button>
+
+  <table id="shiftsTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Starting Hour</th>
+        <th>Ending Hour</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="shiftsBody"></tbody>
+  </table>
+  <script>
+    const baseUrl = 'http://localhost:5001';
+
+    async function fetchShifts() {
+      try {
+        const res = await fetch(`${baseUrl}/shift`);
+        const shifts = await res.json();
+        const tableBody = document.getElementById('shiftsBody');
+
+        shifts.forEach(shift => {
+          const row = document.createElement('tr');
+
+          const dateCell = document.createElement('td');
+          dateCell.textContent = new Date(shift.date).toLocaleDateString();
+          row.appendChild(dateCell);
+
+          const startingHourCell = document.createElement('td');
+          startingHourCell.textContent = shift.startingHour;
+          row.appendChild(startingHourCell);
+
+          const endingHourCell = document.createElement('td');
+          endingHourCell.textContent = shift.endingHour;
+          row.appendChild(endingHourCell);
+
+          const actionsCell = document.createElement('td');
+          const editBtn = document.createElement('button');
+          editBtn.textContent = "Edit";
+          editBtn.onclick = () => editShift(shift._id);
+          actionsCell.appendChild(editBtn);
+          row.appendChild(actionsCell);
+
+          tableBody.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Error fetching shifts", err);
+      }
+    }
+
+    function editShift(shiftId) {
+      // Fetch the shift data by its ID
+      fetch(`${baseUrl}/shift/${shiftId}`)
+        .then(res => res.json())
+        .then(shift => {
+          openEditShiftForm(shift);
+        })
+        .catch(err => console.error("Error fetching shift", err));
+    }
+    function openEditShiftForm(shift) {
+      // Convert the date to the correct format
+      const formattedDate = new Date(shift.date).toISOString().split('T')[0];
+
+      const formHtml = `
+        <div id="editShiftForm" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center;">
+            <div style="background-color: white; padding: 20px; width: 300px;">
+                <label>Date: <input type="date" id="editShiftDate" value="${formattedDate}"></label><br><br>
+                <label>Starting Hour: <input type="text" id="editStartingHour" value="${shift.startingHour}"></label><br><br>
+                <label>Ending Hour: <input type="text" id="editEndingHour" value="${shift.endingHour}"></label><br><br>
+                <button onclick="submitEditShiftForm('${shift._id}')">Submit</button>
+                <button onclick="closeEditShiftForm()">Cancel</button>
+            </div>
+        </div>
+    `;
+
+      document.body.insertAdjacentHTML('beforeend', formHtml);
+    }
+
+    function submitEditShiftForm(shiftId) {
+      const date = document.getElementById('editShiftDate').value;
+      const startingHour = document.getElementById('editStartingHour').value;
+      const endingHour = document.getElementById('editEndingHour').value;
+
+      const updatedShift = {
+        date: date,
+        startingHour: startingHour,
+        endingHour: endingHour
+      };
+
+      // PUT request to update the shift in the backend
+      fetch(`${baseUrl}/shift/${shiftId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedShift),
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Shift updated:', data);
+          closeEditShiftForm();
+          fetchShifts();  // Fetch and display updated shifts
+        })
+        .catch((error) => {
+          console.error('Error updating shift:', error);
+        });
+    }
+    function closeEditShiftForm() {
+      const form = document.getElementById('editShiftForm');
+      form.remove();
+    }
+
+    function openShiftForm() {
+      // Create a basic modal for user input
+      const formHtml = `
+        <div id="shiftForm" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center;">
+            <div style="background-color: white; padding: 20px; width: 300px;">
+                <label>Date: <input type="date" id="shiftDate"></label><br><br>
+                <label>Starting Hour: <input type="text" id="startingHour" placeholder="9"></label><br><br>
+                <label>Ending Hour: <input type="text" id="endingHour" placeholder="17"></label><br><br>
+                <button onclick="submitShiftForm()">Submit</button>
+                <button onclick="closeShiftForm()">Cancel</button>
+            </div>
+        </div>
+    `;
+
+      document.body.insertAdjacentHTML('beforeend', formHtml);
+    }
+
+    function submitShiftForm() {
+      const date = document.getElementById('shiftDate').value;
+      const startingHour = document.getElementById('startingHour').value;
+      const endingHour = document.getElementById('endingHour').value;
+
+      const newShift = {
+        date: date,
+        startingHour: startingHour,
+        endingHour: endingHour
+      };
+
+      // POST request to add the shift to the backend
+      fetch(`${baseUrl}/shift`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newShift),
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Shift added:', data);
+          closeShiftForm();
+          fetchShifts();  // Fetch and display updated shifts
+
+          // TODO: Update the shifts table or refresh the page to show the new shift
+          // e.g. fetchShifts();
+        })
+        .catch((error) => {
+          console.error('Error adding shift:', error);
+        });
+    }
+    async function addEmployee() {
+      try {
+        const formData = new FormData(document.getElementById('addEmployeeForm'));
+        const employee = Object.fromEntries(formData.entries());
+        employee.shifts = ['6515be3a5139fda7c527be60']
+        const res = await fetch('http://localhost:5001/employee', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(employee)
+        });
+        if (res.ok) {
+          alert('Employee added successfully!');
+          location.href = 'employee.html'; // redirect to the employee list page.
+        } else {
+          alert('Failed to add employee!');
+        }
+      } catch (err) {
+        console.error('Error adding employee', err);
+        alert('Failed to add employee!');
+      }
+    }
+    function closeShiftForm() {
+      const form = document.getElementById('shiftForm');
+      form.remove();
+    }
+
+    // Call the fetchShifts function initially to populate the shifts table
+    fetchShifts();
+  </script>
+
+</body>
+
+</html>
